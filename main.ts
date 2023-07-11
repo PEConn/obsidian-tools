@@ -44,8 +44,10 @@ export default class MyPlugin extends Plugin {
 
 			menu.addItem((item) => {
 				const title = inArchive ? "Unarchive" : "Archive";
+        const icon = inArchive ? "archive-restore" : "archive";
 
 				item.setTitle(title)
+          .setIcon(icon)
 					.onClick(() => {
 						const dest = inArchive ? file.path.substring(archiveRoot.length + 1) : archiveRoot + "/" + file.path;
 
