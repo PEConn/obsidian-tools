@@ -1,11 +1,13 @@
 import {
   Editor,
+  EditorPosition,
   Menu,
   Notice,
   Plugin,
   WorkspaceLeaf,
   TAbstractFile
 } from 'obsidian';
+import { sortTodos } from 'sort-todos';
 
 // Remember to rename these classes and interfaces!
 
@@ -67,68 +69,18 @@ export default class MyPlugin extends Plugin {
   }
 
   private sortTodos(editor: Editor) {
-    console.log("Sorting...");
-
-    // 1. Get the current cursor position.
-    const currentLine = editor.getCursor().line;
-
-    if (!MyPlugin.isTask(editor.getLine(currentLine))) {
-      new Notice("Not in a task block.");
-      return;
+    const editorWrapper = {
+      getCurrentLine() { return editor.getCursor().line; },
+      getLine(n: number): string { return editor.getLine(n) },
+      lineCount() { return editor.lineCount() },
+      replaceRange(s: string, from: EditorPosition, to: EditorPosition) { editor.replaceRange(s, from, to) },
     }
 
-    // 2. Go up lines until we run out of todos.
-    let firstLine = currentLine;
-
-    while (firstLine > 0) {
-      if (MyPlugin.isTask(editor.getLine(firstLine - 1))) {
-        firstLine -= 1;
-      } else {
-        break;
-      }
+    const context = {
+      warn(s: string) { new Notice(s);}
     }
 
-    const startingLoc = { ch: 0, line: firstLine };
-
-    // 3. Go down lines until we run out of todos.
-    let lastLine = currentLine;
-
-    while (lastLine < editor.lineCount()) {
-      if (MyPlugin.isTask(editor.getLine(lastLine + 1))) {
-        lastLine += 1;
-      } else {
-        break;
-      }
-    }
-
-    const endingLoc = { ch: editor.getLine(lastLine).length, line: lastLine }
-
-    // 4. Rearrange.
-    const listToday = [];
-    const listOther = [];
-    const listDone = [];
-
-    for (let i = firstLine; i <= lastLine; i++) {
-      const line = editor.getLine(i);
-      const trimmedLine = line.trim();
-
-      if (trimmedLine.startsWith("- [x]")) {
-        listDone.push(line);
-      } else if (trimmedLine.contains("#today")) {
-        listToday.push(line);
-      } else {
-        listOther.push(line);
-      }
-    }
-
-    const sortedList = listToday.concat(listOther, listDone);
-
-    // 5. Replace the text.
-    editor.replaceRange(sortedList.join("\n"), startingLoc, endingLoc);
-  }
-
-  private static isTask(line: string): boolean {
-    return line.trimStart().startsWith("- [");
+    sortTodos(editorWrapper, context);
   }
 
   private async moveToDest(file: TAbstractFile, dest: string) {

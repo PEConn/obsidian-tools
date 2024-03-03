@@ -16,8 +16,6 @@ export interface Context {
 }
 
 export function sortTodos(editor: EditorWrapper, context: Context) {
-  console.log("Sorting...");
-
   // 1. Get the current cursor position.
   // const currentLine = editor.getCursor().line;
   const currentLine = editor.getCurrentLine();
