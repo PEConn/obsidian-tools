@@ -1,8 +1,9 @@
-import {describe, expect, test } from '@jest/globals'
+import { describe, expect, test } from '@jest/globals'
 import { EditorPosition } from "obsidian";
 import { Context, EditorWrapper, sortTodos } from "./sort-todos";
 
-class TestEditor implements EditorWrapper {
+// TODO: Move into different file.
+export class TestEditor implements EditorWrapper {
     _contents: string[];
     _currentLine: number;
 
@@ -31,19 +32,22 @@ class TestEditor implements EditorWrapper {
 
     replaceRange(s: string, start: EditorPosition, end: EditorPosition): void {
         // Can't be bothered making it work more generally for now.
-        if (start.ch !== 0) {
-            throw new Error("Start position must have ch == 0.");
+        if (start.ch !== 0 && start.ch != this.getLine(start.line).length) {
+            throw new Error("Start position must have ch == 0 or line length.");
         }
         if (end.ch !== this.getLine(end.line).length) {
             throw new Error("End position must have ch == line length.")
         }
-
 
         const newContents = [];
         
         // Add the lines above.
         for (let i = 0; i < start.line; i++) {
             newContents.push(this._contents[i]);
+        }
+
+        if (start.ch !== 0) {
+            newContents.push(this._contents[start.line]);
         }
 
         // Add the new lines.
@@ -75,7 +79,7 @@ class TestEditor implements EditorWrapper {
     }
 }
 
-class TestContext implements Context {
+export class TestContext implements Context {
     _lastWarning: string;
 
     warn(s: string): void {
@@ -124,6 +128,12 @@ describe('TestEditor', () => {
         const editor = new TestEditor("line 1\nline 2\nline 3");
         editor.replaceLines("line 3", 0, 2);
         expect(editor.getContents()).toBe("line 3");
+    })
+
+    test('replaceRange at end of line', () => {
+        const editor = new TestEditor("line 1\nline 2\nline 3");
+        editor.replaceRange("line 4", { line: 1, ch: "line 2".length}, {line: 1, ch: "line 2".length })
+        expect(editor.getContents()).toBe("line 1\nline 2\nline 4\nline 3");
     })
 })
 

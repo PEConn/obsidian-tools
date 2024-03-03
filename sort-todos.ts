@@ -4,6 +4,7 @@ function isTask(line: string): boolean {
   return line.trimStart().startsWith("- [");
 }
 
+// TODO: Move these elsewhere.
 export interface EditorWrapper {
   getCurrentLine(): number;
   getLine(n: number): string;
