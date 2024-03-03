@@ -8,6 +8,7 @@ import {
   TAbstractFile
 } from 'obsidian';
 import { sortTodos } from 'sort-todos';
+import { transferTodos } from 'transfer-todos';
 
 // Remember to rename these classes and interfaces!
 
@@ -63,6 +64,12 @@ export default class MyPlugin extends Plugin {
       id: "sort-tasks",
       name: "Sort Tasks",
       editorCallback: (editor: Editor) => { this.sortTodos(editor); }
+    });
+
+    this.addCommand({
+      id: "transfer-tasks",
+      name: "Transfer tasks",
+      editorCallback: (editor: Editor) => { this.transferTodos(editor); }
     })
 
     this.setUiAttributes();
@@ -81,6 +88,21 @@ export default class MyPlugin extends Plugin {
     }
 
     sortTodos(editorWrapper, context);
+  }
+
+  private transferTodos(editor: Editor) {
+    const editorWrapper = {
+      getCurrentLine() { return editor.getCursor().line; },
+      getLine(n: number): string { return editor.getLine(n) },
+      lineCount() { return editor.lineCount() },
+      replaceRange(s: string, from: EditorPosition, to: EditorPosition) { editor.replaceRange(s, from, to) },
+    }
+
+    const context = {
+      warn(s: string) { new Notice(s);}
+    }
+
+    transferTodos(editorWrapper, context);
   }
 
   private async moveToDest(file: TAbstractFile, dest: string) {
