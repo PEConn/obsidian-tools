@@ -56,6 +56,7 @@ export function sortTodos(editor: EditorWrapper, context: Context) {
   // 4. Rearrange.
   const listToday = [];
   const listOther = [];
+  const listCancelled = [];
   const listDone = [];
 
   for (let i = firstLine; i <= lastLine; i++) {
@@ -64,6 +65,8 @@ export function sortTodos(editor: EditorWrapper, context: Context) {
 
     if (trimmedLine.startsWith("- [x]")) {
       listDone.push(line);
+    } else if (trimmedLine.startsWith("- [-]")) {
+      listCancelled.push(line);
     } else if (trimmedLine.includes("#today")) {
       listToday.push(line);
     } else {
@@ -71,7 +74,7 @@ export function sortTodos(editor: EditorWrapper, context: Context) {
     }
   }
 
-  const sortedList = listToday.concat(listOther, listDone);
+  const sortedList = listToday.concat(listOther, listCancelled, listDone);
 
   // 5. Replace the text.
   editor.replaceRange(sortedList.join("\n"), startingLoc, endingLoc);
