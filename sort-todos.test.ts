@@ -159,4 +159,26 @@ describe('Sort Todos', () => {
         expect(context._lastWarning).toBe(undefined);
         expect(editor.getContents()).toBe(expected);
     })
+
+    test('cancelled tasks', () => {
+        const input = `
+        - [x] Done
+        - [-] Cancelled
+        - [ ] Not done
+        `.replace(/^ +/gm, '');
+
+        const expected = `
+        - [ ] Not done
+        - [-] Cancelled
+        - [x] Done
+        `.replace(/^ +/gm, '');
+
+        const editor = new TestEditor(input, 1);
+        const context = new TestContext();
+
+        sortTodos(editor, context);
+
+        expect(context._lastWarning).toBe(undefined);
+        expect(editor.getContents()).toBe(expected);
+    })
 });
